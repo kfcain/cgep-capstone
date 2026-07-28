@@ -1,6 +1,6 @@
 package compliance.cmmc.resilience_test
 
-import future.keywords.in
+import future.keywords
 
 import data.compliance.cmmc.resilience
 
