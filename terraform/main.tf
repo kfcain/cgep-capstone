@@ -48,7 +48,7 @@ resource "aws_kms_key" "data" {
 }
 
 resource "aws_kms_alias" "data" {
-  name          = "alias/${local.name_prefix}-data"
+  name          = "alias/${local.name_prefix}-data-${local.suffix}"
   target_key_id = aws_kms_key.data.key_id
 }
 
