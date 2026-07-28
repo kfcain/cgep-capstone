@@ -101,16 +101,3 @@ The rendered source diagrams are [`network-diagram.mmd`](network-diagram.mmd)
 and [`data-flow-diagram.mmd`](data-flow-diagram.mmd).
 The required CI workflow is [`.github/workflows/grc-gate.yml`](.github/workflows/grc-gate.yml),
 and the required Rev. 2 OSCAL component/profile/catalog are under [`oscal/`](oscal).
-
-## What remains before calling the capstone complete
-
-1. Keep the reserved-concurrency quota item open until AWS raises the account
-   quota or the design is formally accepted with API throttling plus DLQ/X-Ray
-   as the compensating controls.
-2. Demonstrate the policy gate in CI (one intentionally failing baseline and
-   one passing hardened plan) before any production-like promotion.
-3. Submit the repository commit with the required OSCAL, workflow, Terraform,
-   Rego, and writeup artifacts. Organizational SSP/procedure evidence is out of
-   scope for this code capstone unless the course separately requests it.
-4. Decide whether to retain the sandbox resources; destroy them when the
-   evidence session is complete to avoid ongoing charges.
