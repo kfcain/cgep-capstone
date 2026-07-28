@@ -1,0 +1,10 @@
+flowchart LR
+  C[HTTPS client] --> WAF[AWS WAF\n100 requests/IP/300s]
+  WAF --> API[API Gateway REST\nregional /prod]
+  API --> L[Lambda\nprivate subnets + SG]
+  L --> VPC[VPC 10.42.0.0/16]
+  VPC --> EP[VPC endpoints\nS3 + DynamoDB]
+  EP --> DDB[DynamoDB submissions\ncustomer CMK]
+  EP --> S3[S3 uploads\nSSE-KMS + versioning]
+  API --> LOG[CloudWatch access logs\n7-day retention]
+  L -. failures .-> DLQ[SQS Lambda DLQ\n14-day retention]

@@ -1,0 +1,18 @@
+sequenceDiagram
+  participant Client as Synthetic HTTPS client
+  participant WAF as WAF rate rule
+  participant API as API Gateway /prod/intake
+  participant Lambda as Lambda (private VPC)
+  participant DDB as DynamoDB (CMK)
+  participant S3 as S3 uploads (CMK)
+  participant Logs as CloudWatch Logs
+  participant DLQ as SQS DLQ
+  Client->>WAF: POST synthetic intake payload
+  WAF->>API: allow under IP rate limit
+  API->>Logs: structured access record
+  API->>Lambda: invoke
+  Lambda->>DDB: PutItem via DynamoDB endpoint
+  Lambda->>S3: PutObject uploads/* via S3 endpoint
+  Lambda-->>DLQ: failed invocation (if needed)
+  Lambda-->>API: submission_id / received
+  API-->>Client: HTTPS 200
