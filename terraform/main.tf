@@ -295,7 +295,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "uploads" {
   rule {
     apply_server_side_encryption_by_default {
       kms_master_key_id = aws_kms_key.data.arn
-      sse_algorithm     = "aws:kms"
+      # NEGATIVE TEST ONLY: the policy gate must reject downgraded encryption.
+      sse_algorithm = "AES256"
     }
 
     bucket_key_enabled = true
