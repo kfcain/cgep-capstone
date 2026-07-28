@@ -47,6 +47,34 @@ Fork the repo into your own `cgep-capstone` and add:
 
 Full brief: `docs/labs/07_01_capstone_brief.md` in the course content repo.
 
+## Capstone verification
+
+Run these checks from the repository root before submission:
+
+```bash
+terraform -chdir=terraform fmt -check
+terraform -chdir=terraform init -input=false
+terraform -chdir=terraform validate
+terraform -chdir=terraform plan -input=false -out=terraform/evidence/final.tfplan
+terraform -chdir=terraform show -json evidence/final.tfplan > terraform/evidence/final-plan.json
+conftest verify --policy policies
+conftest test terraform/evidence/final-plan.json --policy policies --all-namespaces
+python3 -m json.tool oscal/catalogs/nist-800-171-rev2-catalog.json >/dev/null
+python3 -m json.tool oscal/components/acme-health-intake/component-definition.json >/dev/null
+python3 -m json.tool oscal/profiles/cmmc-l2-selected/profile.json >/dev/null
+# With compliance-trestle installed and a temporary workspace initialized:
+# trestle validate -f catalogs/nist-800-171-rev2-catalog.json --trestle-root /path/to/workspace
+# trestle validate -f component-definitions/acme-health-intake/component-definition.json --trestle-root /path/to/workspace
+# trestle validate -f profiles/cmmc-l2-selected/profile.json --trestle-root /path/to/workspace
+```
+
+The GitHub Actions workflow in `.github/workflows/grc-gate.yml` performs the
+required Plan, Policy check, Apply on merge, Sign, and Upload to vault steps.
+Configure repository variables `AWS_ROLE_ARN` and `EVIDENCE_VAULT` before
+running it. The final submission is the repository URL plus the commit SHA;
+include one passing PR, one intentionally failing policy PR, and a verified
+signed bundle in the Object Lock vault.
+
 ## Framework mapping is required
 
 Your capstone must declare a primary framework: **HIPAA Security Rule**, **SOC 2 Trust Services Criteria**, or **CMMC Level 2**. Every policy carries at least one control ID from your chosen framework. Your OSCAL component's `control-implementations` reference your framework's catalog.

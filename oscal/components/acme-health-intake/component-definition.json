@@ -1,0 +1,112 @@
+{
+  "component-definition": {
+    "uuid": "5f8d7c58-7fc1-4b7f-a4dd-5f55335ccf4b",
+    "metadata": {
+      "title": "Acme Health Intake CMMC L2 component",
+      "last-modified": "2026-07-27T00:00:00Z",
+      "version": "1.0.0",
+      "oscal-version": "1.1.3",
+      "parties": [
+        {
+          "uuid": "a9d2a8a8-7207-4f57-9c11-ccbf3f62e25a",
+          "type": "organization",
+          "name": "Acme Health training boundary"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "33a3e1df-3a2f-4f5f-b2e4-98323406f6cb",
+        "type": "software",
+        "title": "Acme Health Intake governed AWS workload",
+        "description": "Synthetic-data training workload governed by Terraform, Rego, CloudTrail, an Object Lock evidence vault, and a signed CI evidence pipeline. This is not a CUI authorization.",
+        "purpose": "Demonstrate selected CMMC Level 2 / NIST SP 800-171 implementation claims.",
+        "responsible-roles": [
+          {
+            "role-id": "provider",
+            "party-uuids": ["a9d2a8a8-7207-4f57-9c11-ccbf3f62e25a"]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "d6d4ee49-5e6d-4dc8-a3fb-9bc02e1f038e",
+            "source": "../../catalogs/nist-800-171-rev2-catalog.json",
+            "description": "Selected implementation statements for the hardened capstone workload.",
+            "implemented-requirements": [
+              {
+                "uuid": "9d96c2a5-c4b6-4e05-a810-8cd63c88a0c9",
+                "control-id": "ac-3.1.5",
+                "description": "Lambda data access is limited to PutItem, PutObject under uploads/*, required KMS actions, and DLQ SendMessage.",
+                "props": [
+                  {"name": "cmmc-practice", "value": "AC.L2-3.1.5"},
+                  {"name": "terraform-resource", "value": "aws_iam_role_policy.lambda_inline"},
+                  {"name": "implementation-status", "value": "implemented"}
+                ],
+                "links": [
+                  {"rel": "evidence", "href": "s3://acme-health-intake-evidence-6b220bd5/runs/LATEST/receipt.json"}
+                ]
+              },
+              {
+                "uuid": "a7c9f8d5-bf6d-4a96-8ed0-a2c659a2f2f9",
+                "control-id": "au-3.3.1",
+                "description": "The regional REST API stage emits structured access records to CloudWatch; CloudTrail validates management-event log files in the multi-region trail.",
+                "props": [
+                  {"name": "cmmc-practice", "value": "AU.L2-3.3.1"},
+                  {"name": "terraform-resource", "value": "aws_api_gateway_stage.default"},
+                  {"name": "terraform-resource", "value": "aws_cloudtrail.capstone"},
+                  {"name": "implementation-status", "value": "implemented"}
+                ],
+                "links": [
+                  {"rel": "evidence", "href": "s3://acme-health-intake-evidence-6b220bd5/runs/LATEST/receipt.json"}
+                ]
+              },
+              {
+                "uuid": "55f1ef4b-48d7-4e63-8907-f750b4fbfd3a",
+                "control-id": "sc-3.13.1",
+                "description": "Lambda is attached to the governed VPC's private subnets and security group, with gateway/interface endpoints for required services.",
+                "props": [
+                  {"name": "cmmc-practice", "value": "SC.L2-3.13.1"},
+                  {"name": "terraform-resource", "value": "aws_lambda_function.intake"},
+                  {"name": "implementation-status", "value": "implemented"}
+                ]
+              },
+              {
+                "uuid": "9fce39dd-9cc3-4dd6-a0ca-1147c44d6d20",
+                "control-id": "sc-3.13.8",
+                "description": "S3 explicitly denies non-TLS transport and the API endpoint is HTTPS-only.",
+                "props": [
+                  {"name": "cmmc-practice", "value": "SC.L2-3.13.8"},
+                  {"name": "terraform-resource", "value": "aws_s3_bucket_policy.uploads_tls"},
+                  {"name": "implementation-status", "value": "implemented"}
+                ]
+              },
+              {
+                "uuid": "9d0d722d-53e4-4d50-a02c-6643e5d3c2f1",
+                "control-id": "sc-3.13.11",
+                "description": "S3 uploads and DynamoDB submissions use the customer-managed KMS key with rotation enabled.",
+                "props": [
+                  {"name": "cmmc-practice", "value": "SC.L2-3.13.11"},
+                  {"name": "terraform-resource", "value": "aws_kms_key.data"},
+                  {"name": "implementation-status", "value": "implemented"}
+                ]
+              },
+              {
+                "uuid": "4c26c5aa-dfd3-491e-890a-9a0fdbf2394c",
+                "control-id": "si-3.14.6",
+                "description": "Lambda uses active X-Ray tracing and an SQS DLQ; API throttling and WAF rate limiting provide additional detection and containment.",
+                "props": [
+                  {"name": "cmmc-practice", "value": "SI.L2-3.14.6"},
+                  {"name": "terraform-resource", "value": "aws_sqs_queue.lambda_dlq"},
+                  {"name": "implementation-status", "value": "implemented-with-quota-poam"}
+                ],
+                "links": [
+                  {"rel": "evidence", "href": "s3://acme-health-intake-evidence-6b220bd5/runs/LATEST/receipt.json"}
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
