@@ -43,7 +43,7 @@
                   {"name": "implementation-status", "value": "implemented"}
                 ],
                 "links": [
-                  {"rel": "evidence", "href": "s3://acme-health-intake-evidence-6b220bd5/runs/LATEST/receipt.json"}
+                  {"rel": "evidence", "href": "s3://capstone-evidence-vault-configured-at-runtime/runs/LATEST/receipt.json"}
                 ]
               },
               {
@@ -57,7 +57,7 @@
                   {"name": "implementation-status", "value": "implemented"}
                 ],
                 "links": [
-                  {"rel": "evidence", "href": "s3://acme-health-intake-evidence-6b220bd5/runs/LATEST/receipt.json"}
+                  {"rel": "evidence", "href": "s3://capstone-evidence-vault-configured-at-runtime/runs/LATEST/receipt.json"}
                 ]
               },
               {
@@ -100,7 +100,7 @@
                   {"name": "implementation-status", "value": "implemented-with-quota-poam"}
                 ],
                 "links": [
-                  {"rel": "evidence", "href": "s3://acme-health-intake-evidence-6b220bd5/runs/LATEST/receipt.json"}
+                  {"rel": "evidence", "href": "s3://capstone-evidence-vault-configured-at-runtime/runs/LATEST/receipt.json"}
                 ]
               }
             ]

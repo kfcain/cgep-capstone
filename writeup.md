@@ -30,9 +30,11 @@ catalog. The implementation is mapped to the following practices:
 
 ## System boundary and deployed resources
 
-The AWS training boundary is account `216534074034`, region `us-east-1`.
-The workload is a regional API Gateway REST API (`lqe5lqk0ul`) invoking Lambda
-inside VPC `vpc-0e4f63dc45430f8ac`. The data path is:
+The AWS training boundary is a dedicated sandbox in region `us-east-1`; the
+account identifier is intentionally omitted from this public submission. The
+workload is a regional API Gateway REST API defined by
+`aws_api_gateway_rest_api.intake`, invoking Lambda inside the VPC defined by
+`aws_vpc.main`. The data path is:
 
 ```text
 HTTPS client
@@ -44,13 +46,13 @@ HTTPS client
            -> CloudWatch access logs
 ```
 
-The Lambda role is `acme-health-intake-lambda-6b220bd5`. The data key is
-`arn:aws:kms:us-east-1:216534074034:key/19203f5d-ebd9-489b-807a-ced7b3505283`.
-The DLQ is `acme-health-intake-lambda-dlq-6b220bd5` with 1,209,600-second
-(14-day) retention and SQS-managed encryption.
-The required evidence baseline is Object Lock vault
-`acme-health-intake-evidence-6b220bd5` (GOVERNANCE, one day) and the
-multi-region, log-file-validating trail `acme-health-intake-trail-6b220bd5`.
+The Lambda role, data key, DLQ, evidence vault, and CloudTrail trail are
+referenced by their Terraform resources rather than live names or ARNs. The
+DLQ uses 1,209,600-second (14-day) retention and SQS-managed encryption. The
+required evidence baseline is an Object Lock vault (GOVERNANCE, one day) and
+a multi-region, log-file-validating trail. The deployed vault name is supplied
+to CI through the repository variable `EVIDENCE_VAULT` and is intentionally
+not embedded in this public write-up.
 
 ## Gap status
 
@@ -80,8 +82,8 @@ reserved concurrency is enforced.
 - Negative baseline gate: six failures against
   `terraform/evidence/baseline/starter-plan.json`, demonstrating fail-closed
   detection of the starter gaps.
-- Final synthetic POST: HTTP 200 with submission ID
-  `bcec2e75-600d-4c17-99e9-1616577dda45`.
+- Final synthetic POST: HTTP 200 with a generated submission ID (the live ID
+  is omitted from the public submission).
 - Lambda readback: `State=Active`, `LastUpdateStatus=Successful`,
   `TracingMode=Active`, DLQ target present, and private VPC configuration.
 - API stage readback: access log destination present, throttling burst 5/rate
