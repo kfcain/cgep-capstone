@@ -6,7 +6,7 @@
 #   severity: high
 package compliance.cmmc.boundary
 
-import future.keywords.in
+import future.keywords
 
 resources := object.get(input, ["planned_values", "root_module", "resources"], [])
 

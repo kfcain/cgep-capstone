@@ -1,6 +1,6 @@
 package compliance.cmmc.boundary_test
 
-import future.keywords.in
+import future.keywords
 
 import data.compliance.cmmc.boundary
 
