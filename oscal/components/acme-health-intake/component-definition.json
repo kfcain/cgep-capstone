@@ -21,6 +21,13 @@
         "title": "Acme Health Intake governed AWS workload",
         "description": "Synthetic-data training workload governed by Terraform, Rego, CloudTrail, an Object Lock evidence vault, and a signed CI evidence pipeline. This is not a CUI authorization.",
         "purpose": "Demonstrate selected CMMC Level 2 / NIST SP 800-171 implementation claims.",
+        "links": [
+          {
+            "rel": "related",
+            "href": "../../control-map.json",
+            "text": "Bidirectional control-to-code traceability matrix"
+          }
+        ],
         "responsible-roles": [
           {
             "role-id": "provider",
@@ -52,8 +59,7 @@
                 "description": "The regional REST API stage emits structured access records to CloudWatch; CloudTrail validates management-event log files in the multi-region trail.",
                 "props": [
                   {"name": "cmmc-practice", "value": "AU.L2-3.3.1"},
-                  {"name": "terraform-resource", "value": "aws_api_gateway_stage.default"},
-                  {"name": "terraform-resource", "value": "aws_cloudtrail.capstone"},
+                  {"name": "terraform-resources", "value": "aws_api_gateway_stage.default, aws_cloudtrail.capstone"},
                   {"name": "implementation-status", "value": "implemented"}
                 ],
                 "links": [

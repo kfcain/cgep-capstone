@@ -1,0 +1,65 @@
+{
+  "framework": "CMMC Level 2 / NIST SP 800-171 Rev. 2",
+  "purpose": "Bidirectional control-to-code traceability for the training boundary.",
+  "control_to_code": {
+    "AC.L2-3.1.5": {
+      "oscal_control_id": "ac-3.1.5",
+      "terraform": ["aws_iam_role_policy.lambda_inline"],
+      "rego": ["policies/access.rego", "policies/tests/access_test.rego"],
+      "evidence": ["scripts/collect_evidence.py"]
+    },
+    "AU.L2-3.3.1": {
+      "oscal_control_id": "au-3.3.1",
+      "terraform": ["aws_cloudtrail.capstone", "aws_api_gateway_stage.default"],
+      "rego": ["policies/audit.rego", "policies/tests/audit_test.rego"],
+      "evidence": ["scripts/collect_evidence.py"]
+    },
+    "SC.L2-3.13.1": {
+      "oscal_control_id": "sc-3.13.1",
+      "terraform": ["aws_vpc.main", "aws_lambda_function.intake", "aws_vpc_endpoint.logs"],
+      "rego": ["policies/boundary.rego", "policies/tests/boundary_test.rego"],
+      "evidence": ["scripts/collect_evidence.py"]
+    },
+    "SC.L2-3.13.8": {
+      "oscal_control_id": "sc-3.13.8",
+      "terraform": ["aws_s3_bucket_policy.uploads_tls"],
+      "rego": ["policies/storage.rego", "policies/tests/storage_test.rego"],
+      "evidence": ["scripts/collect_evidence.py"]
+    },
+    "SC.L2-3.13.11": {
+      "oscal_control_id": "sc-3.13.11",
+      "terraform": ["aws_kms_key.data", "aws_s3_bucket_server_side_encryption_configuration.uploads", "aws_dynamodb_table.intake"],
+      "rego": ["policies/storage.rego", "policies/tests/storage_test.rego"],
+      "evidence": ["scripts/collect_evidence.py"]
+    },
+    "SI.L2-3.14.6": {
+      "oscal_control_id": "si-3.14.6",
+      "terraform": ["aws_sqs_queue.lambda_dlq", "aws_lambda_function.intake", "aws_cloudwatch_event_rule.policy_changes"],
+      "rego": ["policies/resilience.rego", "policies/tests/resilience_test.rego"],
+      "evidence": ["scripts/collect_evidence.py"]
+    }
+  },
+  "code_to_control": {
+    "policies/access.rego": ["AC.L2-3.1.5"],
+    "policies/audit.rego": ["AU.L2-3.3.1"],
+    "policies/boundary.rego": ["SC.L2-3.13.1"],
+    "policies/storage.rego": ["SC.L2-3.13.8", "SC.L2-3.13.11"],
+    "policies/resilience.rego": ["SI.L2-3.14.6"],
+    "terraform/main.tf": [
+      "AC.L2-3.1.5",
+      "AU.L2-3.3.1",
+      "SC.L2-3.13.1",
+      "SC.L2-3.13.8",
+      "SC.L2-3.13.11",
+      "SI.L2-3.14.6"
+    ],
+    "scripts/collect_evidence.py": [
+      "AC.L2-3.1.5",
+      "AU.L2-3.3.1",
+      "SC.L2-3.13.1",
+      "SC.L2-3.13.8",
+      "SC.L2-3.13.11",
+      "SI.L2-3.14.6"
+    ]
+  }
+}
