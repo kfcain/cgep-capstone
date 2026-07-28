@@ -55,6 +55,7 @@ jobs:
       - name: Policy check (Conftest)
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
+          set -o pipefail
           mkdir -p ../evidence
           conftest test plan.json --policy ../policies --all-namespaces --output json | tee ../evidence/conftest-results.json
 
@@ -64,7 +65,7 @@ jobs:
         run: terraform apply -input=false -auto-approve tfplan
 
       - name: Sign
-        if: always()
+        if: success()
         run: |
           mkdir -p evidence
           cp terraform/plan.json evidence/plan.json
@@ -72,7 +73,7 @@ jobs:
           cosign sign-blob --yes --bundle evidence-${{ github.run_id }}.sig.bundle evidence-${{ github.run_id }}.tar.gz
 
       - name: Upload to vault
-        if: always() && vars.EVIDENCE_VAULT != ''
+        if: success() && vars.EVIDENCE_VAULT != ''
         env:
           VAULT: ${{ vars.EVIDENCE_VAULT }}
         run: |

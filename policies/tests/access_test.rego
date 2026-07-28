@@ -1,5 +1,7 @@
 package compliance.cmmc.access_test
 
+import future.keywords.in
+
 import data.compliance.cmmc.access
 
 test_wildcard_action_gate if {
