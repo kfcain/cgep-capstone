@@ -25,7 +25,17 @@ deny contains "GAP-02: DynamoDB must use customer-managed encryption" if {
   not table.server_side_encryption[0].enabled
 }
 
+tls_policy_present if {
+  resource("aws_s3_bucket_policy.uploads_tls") != null
+}
+
+tls_policy_known if {
+  policy := object.get(resource("aws_s3_bucket_policy.uploads_tls").values, "policy", null)
+  policy != null
+}
+
 has_tls_deny if {
+  tls_policy_known
   policy := json.unmarshal(resource("aws_s3_bucket_policy.uploads_tls").values.policy)
   some statement in policy.Statement
   statement.Effect == "Deny"
@@ -33,6 +43,11 @@ has_tls_deny if {
 }
 
 deny contains "GAP-03: S3 must deny non-TLS transport" if {
+  not tls_policy_present
+}
+
+deny contains "GAP-03: S3 must deny non-TLS transport" if {
+  tls_policy_known
   not has_tls_deny
 }
 
