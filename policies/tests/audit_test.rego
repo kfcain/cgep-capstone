@@ -1,5 +1,7 @@
 package compliance.cmmc.audit_test
 
+import future.keywords.in
+
 import data.compliance.cmmc.audit
 
 test_audit_log_gate if {

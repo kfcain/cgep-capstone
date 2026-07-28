@@ -1,5 +1,7 @@
 package compliance.cmmc.resilience_test
 
+import future.keywords.in
+
 import data.compliance.cmmc.resilience
 
 test_dlq_gate if {

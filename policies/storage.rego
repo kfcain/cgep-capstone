@@ -6,6 +6,8 @@
 #   severity: high
 package compliance.cmmc.storage
 
+import future.keywords.in
+
 resources := object.get(input, ["planned_values", "root_module", "resources"], [])
 
 resource(address) = r if {
