@@ -75,6 +75,24 @@ running it. The final submission is the repository URL plus the commit SHA;
 include one passing PR, one intentionally failing policy PR, and a verified
 signed bundle in the Object Lock vault.
 
+## Post-pass evidence and monitoring extensions
+
+The workflow validates `oscal/control-map.json` in both directions and, after
+a merge-time apply, runs `scripts/collect_evidence.py` to record live AWS
+readbacks in the signed evidence bundle. The script records provider state,
+not credentials or Terraform state.
+
+Continuous monitoring is available as an explicit Terraform opt-in:
+
+```bash
+terraform -chdir=terraform plan -var='enable_monitoring=true'
+```
+
+When enabled, the stack adds a CloudTrail policy-change EventBridge rule, a
+Lambda detector, a seven-day log group, and an SNS alert topic. The default is
+`false` so an evidence-only run does not add resources or cost; subscribe an
+operator to the topic before enabling it for an operational environment.
+
 ## Framework mapping is required
 
 Your capstone must declare a primary framework: **HIPAA Security Rule**, **SOC 2 Trust Services Criteria**, or **CMMC Level 2**. Every policy carries at least one control ID from your chosen framework. Your OSCAL component's `control-implementations` reference your framework's catalog.

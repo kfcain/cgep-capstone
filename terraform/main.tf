@@ -406,6 +406,13 @@ data "archive_file" "handler" {
   output_path = "${path.module}/lambda/handler.zip"
 }
 
+data "archive_file" "monitoring" {
+  count       = var.enable_monitoring ? 1 : 0
+  type        = "zip"
+  source_file = "${path.module}/monitoring/handler.py"
+  output_path = "${path.module}/monitoring/handler.zip"
+}
+
 resource "aws_iam_role" "lambda" {
   name = "${local.name_prefix}-lambda-${local.suffix}"
 
@@ -691,4 +698,124 @@ resource "aws_api_gateway_account" "regional" {
   cloudwatch_role_arn = aws_iam_role.apigw_cloudwatch.arn
 
   depends_on = [aws_iam_role_policy_attachment.apigw_cloudwatch]
+}
+
+######################################################################
+# Continuous monitoring — opt-in CloudTrail policy-change detection.
+# The detector is disabled by default so evidence-only runs do not add
+# billable resources. Enable with -var='enable_monitoring=true'.
+######################################################################
+
+resource "aws_sns_topic" "monitoring_alerts" {
+  count = var.enable_monitoring ? 1 : 0
+  name  = "${local.name_prefix}-monitoring-alerts-${local.suffix}"
+}
+
+resource "aws_cloudwatch_log_group" "monitoring" {
+  count             = var.enable_monitoring ? 1 : 0
+  name              = "/aws/lambda/${local.name_prefix}-monitor-${local.suffix}"
+  retention_in_days = 7
+}
+
+resource "aws_iam_role" "monitoring" {
+  count = var.enable_monitoring ? 1 : 0
+  name  = "${local.name_prefix}-monitor-${local.suffix}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "lambda.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "monitoring" {
+  count = var.enable_monitoring ? 1 : 0
+  name  = "monitoring-alerts"
+  role  = aws_iam_role.monitoring[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "${aws_cloudwatch_log_group.monitoring[0].arn}:*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["sns:Publish"]
+        Resource = aws_sns_topic.monitoring_alerts[0].arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "monitoring_basic" {
+  count      = var.enable_monitoring ? 1 : 0
+  role       = aws_iam_role.monitoring[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_lambda_function" "monitoring" {
+  count            = var.enable_monitoring ? 1 : 0
+  function_name    = "${local.name_prefix}-monitor-${local.suffix}"
+  role             = aws_iam_role.monitoring[0].arn
+  handler          = "handler.handler"
+  runtime          = "python3.12"
+  filename         = data.archive_file.monitoring[0].output_path
+  source_code_hash = data.archive_file.monitoring[0].output_base64sha256
+  timeout          = 10
+
+  environment {
+    variables = {
+      ALERT_TOPIC_ARN = aws_sns_topic.monitoring_alerts[0].arn
+    }
+  }
+
+  depends_on = [aws_iam_role_policy_attachment.monitoring_basic]
+}
+
+resource "aws_cloudwatch_event_rule" "policy_changes" {
+  count       = var.enable_monitoring ? 1 : 0
+  name        = "${local.name_prefix}-policy-changes-${local.suffix}"
+  description = "Detect CloudTrail changes that can weaken the governed boundary."
+
+  event_pattern = jsonencode({
+    source        = ["aws.iam", "aws.s3", "aws.ec2", "aws.lambda", "aws.apigateway", "aws.wafv2"]
+    "detail-type" = ["AWS API Call via CloudTrail"]
+    detail = {
+      eventName = [
+        "PutRolePolicy",
+        "PutRolePolicies",
+        "DeleteRolePolicy",
+        "PutBucketPolicy",
+        "DeleteBucketPolicy",
+        "ModifyVpcAttribute",
+        "UpdateFunctionConfiguration",
+        "AssociateWebACL",
+        "DisassociateWebACL"
+      ]
+    }
+  })
+}
+
+resource "aws_cloudwatch_event_target" "policy_changes" {
+  count = var.enable_monitoring ? 1 : 0
+  rule  = aws_cloudwatch_event_rule.policy_changes[0].name
+  arn   = aws_lambda_function.monitoring[0].arn
+}
+
+resource "aws_lambda_permission" "monitoring_events" {
+  count         = var.enable_monitoring ? 1 : 0
+  statement_id  = "AllowEventBridgePolicyChanges"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.monitoring[0].function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.policy_changes[0].arn
 }

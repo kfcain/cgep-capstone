@@ -57,12 +57,20 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p ../evidence
-          conftest test plan.json --policy ../policies --all-namespaces --output json | tee ../evidence/conftest-results.json
+          conftest test plan.json --policy ../policies --all-namespaces --output json \
+            | tee ../evidence/conftest-results.json || exit 1
+
+      - name: Validate control map
+        run: python3 scripts/validate_control_map.py
 
       - name: Apply on merge
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform apply -input=false -auto-approve tfplan
+
+      - name: Collect live evidence
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: python3 scripts/collect_evidence.py --terraform-dir terraform --output evidence/live-state.json
 
       - name: Sign
         if: success()

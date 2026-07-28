@@ -11,6 +11,8 @@ crash.log
 
 # Lambda build
 terraform/lambda/handler.zip
+terraform/monitoring/handler.zip
+__pycache__/
 
 # Local
 evidence/
