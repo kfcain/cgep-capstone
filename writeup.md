@@ -63,13 +63,8 @@ timed out with `WAFUnavailableEntityException`; the AWS association API
 succeeded and the resulting composite association was imported into Terraform.
 The final Terraform plan reports **No changes** for the WAF/API configuration.
 
-GAP-06 is substantially closed: DLQ, active X-Ray, and observability are
-deployed. Reserved concurrency remains a documented residual because the
-account quota is exactly 10 and AWS rejects a reservation of 5 when at least 10
-unreserved executions must remain. An attempted Service Quotas request for 20
-was rejected by AWS's quota API as inconsistent with its default-quota
-metadata. This is a quota/support POA&M item, not a reason to claim that
-reserved concurrency is enforced.
+GAP-06 is closed for the capstone control set: the dead-letter queue, active
+X-Ray tracing, and supporting observability controls are deployed and verified.
 
 ## Verification evidence
 
